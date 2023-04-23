@@ -1,75 +1,129 @@
-// Code to read numbers from file containing random numbers, sort them and find the time taken to sort
+// Code to read random numbers from file and sort them using linked list and calculate the time taken
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-void read(FILE *fp,int no,int arr[])       //function to read from file
+struct NODE
 {
-    int i;
-    for(i=0;i<no;i++)
+    int data;
+    struct NODE *next;
+};
+
+typedef struct NODE *node;
+
+node head=NULL;
+node tail=NULL;
+node tail1=NULL,curr;
+
+node insert(int c)                                      //Function to insert new node at the end
+{
+    node newnode=(node)malloc(sizeof(struct NODE));
+    if(newnode==NULL)
     {
-        fscanf(fp,"%d",&arr[i]);
+        printf("\nNode not created");
+        exit(0);
     }
+    newnode->data=c;
+    newnode->next=NULL;
+    return newnode;
 }
 
-void sort(FILE *fp,int no,int arr[])       //function to sort the array
+int n;
+
+void read(FILE *fp)                 //function to read from file and store in linked list
 {
-    int i,j,temp;
-    for(i=0;i<no-1;i++)
+    int c;
+    for(int i=0;i<n;i++)
     {
-        for(j=i;j<no;j++)
+        fscanf(fp,"%d",&c);
+        if(i==0)//first node
         {
-            if(arr[i]>arr[j])
-            {
-                temp=arr[i];
-                arr[i]=arr[j];            //swap
-                arr[j]=temp;
-            }
+            head=insert(c);
+            tail=head;
+        }
+        else
+        {
+            tail1=insert(c);
+            tail->next=tail1;
+            tail=tail->next;
         }
     }
 }
-void display(int arr[],int no)             //function to display the arrray
+void random(FILE *fp)                    //generate random numbers
 {
-    int i;
-    for(i=0;i<no;i++)
+    printf("\nEnter range: ");
+    scanf("%d",&n);
+    for(int i=0;i<n;i++)
     {
-        printf(" %d",arr[i]);
+        fprintf(fp,"%d ",rand()%1000);
     }
+}
+
+void display()
+{
+    if(head==NULL)
+    {
+        printf("\nEmpty..");
+        return ;
+    }
+    node temp=head;
+    while(temp!=NULL)
+    {
+        printf("%d  ",temp->data);
+        temp=temp->next;
+    }
+    printf("\n");
+}
+
+void sort()                                          // function to sort linked list using bubble sort
+{
+    node cur=head,temp1=head;
+    int temp;
+    do
+    {
+        do
+        {
+            temp1=temp1->next;
+            if(cur->data>temp1->data)
+            {
+                temp=temp1->data;
+                temp1->data=cur->data;        // swap data
+                cur->data=temp;
+            }
+
+        }while(temp1->next!=NULL);
+        cur=cur->next;
+        temp1=cur;
+    }while(cur->next!=NULL);
 }
 
 int main()
 {
-    time_t t1,t2,tf;
+    FILE *fp;
+    time_t t1,t2,t;
+    fp=fopen("LL.txt","w");               //write mode
+    random(fp);                            //generate random numbers and store in file
+    fclose(fp);
 
-    int no,i,arr[100000],num;
-    FILE *fp=fopen("array1.txt","w");               //write mode
+    fp=fopen("LL.txt","r");              //read mode
 
-    printf("\nEnter no. of rand nos.:");
-    scanf("%d",&num);
+    read(fp);                            //read from file and store in linked list
+    fclose(fp);
 
-    for(i=0;i<num;i++)
+    t1=time(NULL);
+    sort();
+    t2=time(NULL);
+
+    //display();
+    t=t2-t1;                                //total time taken to sort
+    printf("\nTime Taken: %ld",t);
+    fp=fopen("LL.txt","w");
+    curr=head;
+    do
     {
-        fprintf(fp," %d",rand()%1000);              // generate random numbers
-    }
-    fclose(fp);
-
-
-    printf("\nEnter the no. of digits to sort: ");
-    scanf("%d",&no);
-
-    fp=fopen("array1.txt","r");                    // read mode
-    read(fp,no,arr);
-    fclose(fp);
-
-
-    t1=time(NULL);                               //initial time
-    sort(fp,no,arr);
-    t2=time(NULL);                               //final time
-
-
-    display(arr,no);
-    tf=t2-t1;
-    printf("\n\n Time = %ld",tf);              //total time taken to sort
+        fprintf(fp,"%d ",curr->data);
+        curr=curr->next;
+    }while(curr->next!=NULL);
     return 0;
 }
