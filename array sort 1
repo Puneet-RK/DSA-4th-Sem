@@ -1,0 +1,67 @@
+//code to read 100 words from file and sort them using arrays
+#include<stdio.h>
+#include<math.h>
+#include<time.h>
+#include<stdlib.h>
+
+FILE *fptr;
+
+void random(void)
+{
+  int a,b;
+  fptr=fopen("file90.txt","w");
+  for(int i=0;i<100;i++)
+  {
+    a=rand();                          //generate random numbers and store in file
+    b=a%1000;
+    fprintf(fptr,"%d ",b);
+  }
+  fclose(fptr);
+}
+
+void sort()                             //function to sort
+{
+    int i,j;
+    for(i=0;i<100;i++)
+    {
+        for(j=i+1;j<100;j++)
+        {
+            if(a[i]>a[j])
+            {
+                temp=a[i];
+                a[i]=a[j];                   //swap
+                a[j]=temp;
+            }
+        }
+    }
+}
+
+int a[100];
+
+main()
+{   
+    int temp;
+    time_t t1,t2,t;
+    random();
+    fptr=fopen("file90.txt","r");               //read mode
+    for(long int i=0;i<100;i++)
+    {
+        fscanf(fptr,"%d",&a[i]);                //read numbers from file and store in array
+    }
+    fclose(fptr);
+    
+    t1=time(NULL);                             //initial time 
+    sort();
+    t2=time(NULL);                            //final time
+    t=t2-t1;
+    
+    fptr=fopen("file90.txt","w");
+    for(long int i=0;i<100;i++)
+    {
+        fprintf(fptr,"%d ",a[i]);            //write back the sorted numbers in file
+    }
+    fclose(fptr);
+    
+    fprintf(fptr,"\nTIME TAKEN:\n%ld",t);    //total time taken
+    
+}
