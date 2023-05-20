@@ -1,129 +1,93 @@
-// Code to read random numbers from file and sort them using linked list and calculate the time taken
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+FILE *ip,*stk,*poped,*pushed,*op;
+int data,array[100],top=-1,k;
 
-struct NODE
+void push()
 {
-    int data;
-    struct NODE *next;
-};
-
-typedef struct NODE *node;
-
-node head=NULL;
-node tail=NULL;
-node tail1=NULL,curr;
-
-node insert(int c)                                      //Function to insert new node at the end
-{
-    node newnode=(node)malloc(sizeof(struct NODE));
-    if(newnode==NULL)
+    if(top>=99)
     {
-        printf("\nNode not created");
-        exit(0);
+        printf("\nStack Overflow:");
+        return;
     }
-    newnode->data=c;
-    newnode->next=NULL;
-    return newnode;
+    fscanf(ip,"%d",&data);
+    stk=fopen("stack.txt","a");
+    fprintf(stk,"%d\n",data);
+    fprintf(pushed,"%d\n",data);
+    fprintf(op,"push\n");
+    fclose(stk);
+    top++;
+    array[top]=data;
 }
 
-int n;
-
-void read(FILE *fp)                 //function to read from file and store in linked list
+void pop()
 {
-    int c;
-    for(int i=0;i<n;i++)
+    if(top<0)
     {
-        fscanf(fp,"%d",&c);
-        if(i==0)//first node
-        {
-            head=insert(c);
-            tail=head;
-        }
-        else
-        {
-            tail1=insert(c);
-            tail->next=tail1;
-            tail=tail->next;
-        }
+        printf("\nStack underflow:");
     }
-}
-void random(FILE *fp)                    //generate random numbers
-{
-    printf("\nEnter range: ");
-    scanf("%d",&n);
-    for(int i=0;i<n;i++)
+    stk=fopen("stack.txt","w");
+    fprintf(poped,"%d\n",array[top]);
+    top--;
+    fprintf(op,"pop\n");
+    k=0;
+    for(k=0;k<=top;k++)
     {
-        fprintf(fp,"%d ",rand()%1000);
+        fprintf(stk,"%d\n",array[k]);
     }
+    fclose(stk);
 }
 
-void display()
+void flushfile()
 {
-    if(head==NULL)
-    {
-        printf("\nEmpty..");
-        return ;
-    }
-    node temp=head;
-    while(temp!=NULL)
-    {
-        printf("%d  ",temp->data);
-        temp=temp->next;
-    }
-    printf("\n");
-}
-
-void sort()                                          // function to sort linked list using bubble sort
-{
-    node cur=head,temp1=head;
-    int temp;
-    do
-    {
-        do
-        {
-            temp1=temp1->next;
-            if(cur->data>temp1->data)
-            {
-                temp=temp1->data;
-                temp1->data=cur->data;        // swap data
-                cur->data=temp;
-            }
-
-        }while(temp1->next!=NULL);
-        cur=cur->next;
-        temp1=cur;
-    }while(cur->next!=NULL);
+    poped=fopen("poped.txt","w");
+    pushed=fopen("pushed.txt","w");
+    op=fopen("op.txt","w");
+    fclose(pushed);
+    fclose(poped);
+    fclose(op);
 }
 
 int main()
 {
-    FILE *fp;
-    time_t t1,t2,t;
-    fp=fopen("LL.txt","w");               //write mode
-    random(fp);                            //generate random numbers and store in file
-    fclose(fp);
+    int choice,i;
+    ip=fopen("input.txt","w");
+    flushfile();                        //clear previous log files
+    poped=fopen("poped.txt","a");
+    pushed=fopen("pushed.txt","a");
+    op=fopen("op.txt","a");
 
-    fp=fopen("LL.txt","r");              //read mode
-
-    read(fp);                            //read from file and store in linked list
-    fclose(fp);
-
-    t1=time(NULL);
-    sort();
-    t2=time(NULL);
-
-    //display();
-    t=t2-t1;                                //total time taken to sort
-    printf("\nTime Taken: %ld",t);
-    fp=fopen("LL.txt","w");
-    curr=head;
-    do
+    if(ip==NULL||poped==NULL||pushed==NULL||op==NULL)
     {
-        fprintf(fp,"%d ",curr->data);
-        curr=curr->next;
-    }while(curr->next!=NULL);
+        printf("\n\nFile not opened!");
+        goto label;
+    }
+
+    for(i=0;i<100;i++)
+    {
+        fprintf(ip,"%d\n",rand()%100);            //generate random numbers in input file
+    }
+    fclose(ip);
+
+    ip=fopen("input.txt","r");
+    while(1){
+    printf("Enter choice: 1-push,2-pop,3-end");
+    scanf("%d",&choice);
+
+    switch(choice)
+    {
+        case 1:push();break;
+        case 2:pop();break;
+        case 3:goto label;break;
+        default:printf("Invalid choice");
+    }
+    }
+    label:
+        printf("\nfinished");
+    fclose(ip);
+    fclose(stk);
+    fclose(pushed);
+    fclose(poped);
+    fclose(op);
     return 0;
 }
