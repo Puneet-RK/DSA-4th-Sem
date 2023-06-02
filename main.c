@@ -1,39 +1,57 @@
 #include <stdio.h>
 #include <stdlib.h>
 FILE *ip,*stk,*poped,*pushed,*op;
-int data,array[100],top=-1,k;
-
+int data;
+struct Node
+{
+    int dat;
+    struct Node *next,*prev;
+};
+typedef struct Node *node;
+node top=NULL,newnode,temp;
 void push()
 {
-    if(top>=99)
-    {
-        printf("\nStack Overflow:");
-        return;
-    }
+    newnode=malloc(sizeof(struct Node));
+    newnode->next=NULL;
+    newnode->prev=NULL;
     fscanf(ip,"%d",&data);
     stk=fopen("stack.txt","a");
     fprintf(stk,"%d\n",data);
     fprintf(pushed,"%d\n",data);
     fprintf(op,"push\n");
     fclose(stk);
-    top++;
-    array[top]=data;
+    newnode->dat=data;
+    if(top==NULL)
+        top=newnode;
+    else
+    {
+        top->next=newnode;
+        newnode->prev=top;
+        top=top->next;
+    }
 }
 
 void pop()
 {
-    if(top<0)
+    if(top==NULL)
     {
         printf("\nStack underflow:");
+        return;
     }
     stk=fopen("stack.txt","w");
-    fprintf(poped,"%d\n",array[top]);
-    top--;
+    fprintf(poped,"%d\n",top->dat);
+    temp=top;
+    top=top->prev;
+    free(temp);
+    top->next=NULL;
     fprintf(op,"pop\n");
-    k=0;
-    for(k=0;k<=top;k++)
+    temp=top;
+    while(temp->prev!=NULL)
+        temp=temp->prev;
+    while(temp!=NULL)
     {
-        fprintf(stk,"%d\n",array[k]);
+        fprintf(stk,"%d\n",temp->dat);
+        temp=temp->next;
     }
     fclose(stk);
 }
@@ -44,13 +62,34 @@ void flushfile()
     pushed=fopen("pushed.txt","w");
     op=fopen("op.txt","w");
     fclose(pushed);
+    stk=fopen("stack.txt","w");
+    fclose(stk);
     fclose(poped);
     fclose(op);
 }
+void random()
+{
+    for(int i=0;i<100;i++)
+    {
+        fprintf(ip,"%d\n",rand()%1000);            //generate random numbers in input file
+    }
+}
+void display()
+{
+    temp=top;
+    while(temp->prev!=NULL)
+        temp=temp->prev;
+    printf("\n\n");
+    while(temp!=NULL)
+    {
+        printf("%d ",temp->dat);
+        temp=temp->next;
+    }
 
+}
 int main()
 {
-    int choice,i;
+    int choice;
     ip=fopen("input.txt","w");
     flushfile();                        //clear previous log files
     poped=fopen("poped.txt","a");
@@ -60,30 +99,27 @@ int main()
     if(ip==NULL||poped==NULL||pushed==NULL||op==NULL)
     {
         printf("\n\nFile not opened!");
-        goto label;
+        goto finished;
     }
-
-    for(i=0;i<100;i++)
-    {
-        fprintf(ip,"%d\n",rand()%100);            //generate random numbers in input file
-    }
+    random();
     fclose(ip);
 
     ip=fopen("input.txt","r");
     while(1){
-    printf("Enter choice: 1-push,2-pop,3-end");
+    printf("\nEnter choice: 1-push,2-pop,3-display,4-end:\n");
     scanf("%d",&choice);
 
     switch(choice)
     {
         case 1:push();break;
         case 2:pop();break;
-        case 3:goto label;break;
+        case 3:display();break;
+        case 4:goto finished;break;
         default:printf("Invalid choice");
     }
     }
-    label:
-        printf("\nfinished");
+    finished:
+    printf("\nfinished");
     fclose(ip);
     fclose(stk);
     fclose(pushed);
@@ -91,3 +127,5 @@ int main()
     fclose(op);
     return 0;
 }
+
+
