@@ -1,131 +1,138 @@
-#include <stdio.h>
-#include <stdlib.h>
-FILE *ip,*stk,*poped,*pushed,*op;
-int data;
+#include<stdio.h>
+#include<stdlib.h>
+FILE *input,*queue,*enqueue,*dq,*logg;
 struct Node
 {
-    int dat;
-    struct Node *next,*prev;
+    int data;
+    struct Node *next;
 };
 typedef struct Node *node;
-node top=NULL,newnode,temp;
-void push()
-{
-    newnode=malloc(sizeof(struct Node));
-    newnode->next=NULL;
-    newnode->prev=NULL;
-    fscanf(ip,"%d",&data);
-    stk=fopen("stack.txt","a");
-    fprintf(stk,"%d\n",data);
-    fprintf(pushed,"%d\n",data);
-    fprintf(op,"push\n");
-    fclose(stk);
-    newnode->dat=data;
-    if(top==NULL)
-        top=newnode;
-    else
-    {
-        top->next=newnode;
-        newnode->prev=top;
-        top=top->next;
-    }
-}
+node head=NULL,tail=NULL;
 
-void pop()
+void enqueuee()
 {
-    if(top==NULL)
+    node newNode=malloc(sizeof(struct Node));
+    if(newNode==NULL)
     {
-        printf("\nStack underflow:");
+        printf("\nNode not created!!\n");
         return;
     }
-    stk=fopen("stack.txt","w");
-    fprintf(poped,"%d\n",top->dat);
-    temp=top;
-    top=top->prev;
-    free(temp);
-    top->next=NULL;
-    fprintf(op,"pop\n");
-    temp=top;
-    while(temp->prev!=NULL)
-        temp=temp->prev;
-    while(temp!=NULL)
+    int val;
+    fscanf(input,"%d",&val);
+
+    newNode->data=val;
+    newNode->next = NULL;
+
+    //if it is the first node
+    if(head == NULL && tail == NULL)
+        //make both head and tail points to the new node
+        head = tail = newNode;
+    else
     {
-        fprintf(stk,"%d\n",temp->dat);
-        temp=temp->next;
+        //add newnode in tail->next
+        tail->next = newNode;
+
+        //make the new node as the tail node
+        tail = newNode;
     }
-    fclose(stk);
+    queue=fopen("queue.txt","a");
+    fprintf(queue,"%d\n",val);
+    fclose(queue);
+    fprintf(enqueue,"%d\n",val);
+    logg=fopen("log.txt","a");
+    fprintf(logg,"Enqueue\n");
+    fclose(logg);
 }
 
-void flushfile()
+void dequeuee()
 {
-    poped=fopen("poped.txt","w");
-    pushed=fopen("pushed.txt","w");
-    op=fopen("op.txt","w");
-    fclose(pushed);
-    stk=fopen("stack.txt","w");
-    fclose(stk);
-    fclose(poped);
-    fclose(op);
+    //used to free the first node after dequeue
+    node temp;
+
+    if(head == NULL){
+         printf("Queue is Empty. Unable to perform dequeue\n");return;}
+        //take backup
+        temp = head;
+
+        //make the head node points to the next node
+        //logically removing the head element
+        head = head->next;
+
+        //if head == NULL, set tail = NULL
+        if(head == NULL)
+            {tail = NULL;
+            head=NULL;}
+       //free the first node
+       fprintf(dq,"%d\n",temp->data);
+       free(temp);
+       queue=fopen("queue.txt","w");
+       temp=head;
+       while(temp!=NULL)
+       {
+           fprintf(queue,"%d\n",temp->data);
+           temp=temp->next;
+       }
+       fclose(queue);
+        logg=fopen("log.txt","a");
+        fprintf(logg,"Dequeue\n");
+        fclose(logg);
+
+
 }
-void random()
-{
-    for(int i=0;i<100;i++)
-    {
-        fprintf(ip,"%d\n",rand()%1000);            //generate random numbers in input file
-    }
-}
+
 void display()
 {
-    temp=top;
-    while(temp->prev!=NULL)
-        temp=temp->prev;
-    printf("\n\n");
-    while(temp!=NULL)
-    {
-        printf("%d ",temp->dat);
-        temp=temp->next;
-    }
+    node temp = head;
 
+    while(temp)
+    {
+        printf("%d->",temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+void random(int n)
+{
+    input=fopen("input.txt","w");
+    for(int i=0;i<n;i++)
+    {
+        fprintf(input,"%d\n",rand()%1000);
+    }
+    fclose(input);
+}
+ void flush()
+{
+    queue=fopen("queue.txt","w");
+    fclose(queue);
+    logg=fopen("log.txt","w");
+    fclose(logg);
 }
 int main()
 {
-    int choice;
-    ip=fopen("input.txt","w");
-    flushfile();                        //clear previous log files
-    poped=fopen("poped.txt","a");
-    pushed=fopen("pushed.txt","a");
-    op=fopen("op.txt","a");
-
-    if(ip==NULL||poped==NULL||pushed==NULL||op==NULL)
+    int choice,n;
+    printf("Enter the number of random numbers to be generated: ");
+    scanf("%d",&n);
+    random(n);
+    flush();
+    enqueue=fopen("enqueue.txt","w");
+    dq=fopen("dequeue.txt","w");
+    input=fopen("input.txt","r");
+    while(1)
     {
-        printf("\n\nFile not opened!");
-        goto finished;
+        printf("\nEnter 1:Enqueue 2:Dequeue 3:Display\n");
+        scanf("%d",&choice);
+        switch(choice)
+        {
+            case 1:enqueuee(); break;
+            case 2:dequeuee(); break;
+            case 3:display(); break;
+            case 4:goto finish;break;
+            default:printf("\nChoice not valid\n");
+        }
     }
-    random();
-    fclose(ip);
-
-    ip=fopen("input.txt","r");
-    while(1){
-    printf("\nEnter choice: 1-push,2-pop,3-display,4-end:\n");
-    scanf("%d",&choice);
-
-    switch(choice)
-    {
-        case 1:push();break;
-        case 2:pop();break;
-        case 3:display();break;
-        case 4:goto finished;break;
-        default:printf("Invalid choice");
-    }
-    }
-    finished:
-    printf("\nfinished");
-    fclose(ip);
-    fclose(stk);
-    fclose(pushed);
-    fclose(poped);
-    fclose(op);
+    finish:
+    fclose(input);
+    fclose(dq);
+    fclose(enqueue);
     return 0;
 }
-
-
